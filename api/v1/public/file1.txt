@@ -1,0 +1,18 @@
+User Object
+(
+    [user] => Array
+        (
+            [id] => 432
+            [nombre] => yeray697
+            [email] => yeray.1997.yr@gmail.com
+            [radio] => 25
+            [direccion] => Alameda Principal (Sur), 29001 Málaga, España
+            [latitud] => 36.716934
+            [longitud] => -4.425387
+            [validate] => 1
+            [has_rest] => 0
+        )
+
+    [status] => 200
+    [message] => Login correcto
+)
