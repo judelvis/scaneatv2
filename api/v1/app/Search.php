@@ -59,6 +59,8 @@ class Search extends Result{
         $noIngredients = $searchFilter["noIngredients"];
         $minPrice = $searchFilter["minPrice"];
         $maxPrice = $searchFilter["maxPrice"];
+        $texto = $searchFilter["name"];
+        $forden = $searchFilter["orden"];
 
         /*$location = json_decode($location,true);
         $foodType = json_decode($foodType, true);
@@ -66,14 +68,28 @@ class Search extends Result{
         $ingredients = json_decode($ingredients, true);
         $noIngredients = json_decode($noIngredients, true);*/
         $sql = array();
-
+        $prefijo = "";
         if ($isPlate) {
             $result = new Plates();
+            $prefijo = " p.";
         } else {
             $result = new Restaurants();
         }
         if ($location) {
-            $locationSql = Search::GetLocationSQL($location, $isPlate);
+            $where = "";
+            if($texto != ""){
+                $search_exploded = explode ( " ", $texto );
+                $x = 0;
+                $where = "where";
+                foreach( $search_exploded as $search_each ) {
+                    $x++;
+                    if( $x != 1 ) {
+                        $where .= "OR ";
+                    }
+                    $where .= " ".$prefijo."nombre LIKE '%".$search_each."%' ";
+                }
+            }
+            $locationSql = Search::GetLocationSQL($location, $isPlate,$where);
             /*if ($specialSearch) {
                 if ($specialSearch == "newestRest") {
                     $specialSearchSql = "select id as rest_id 
@@ -116,7 +132,12 @@ class Search extends Result{
                 $sql["price"] = Search::GetPriceSQL($minPrice, $maxPrice, $isPlate);
             }
 
-            $finalSql = Search::JoinSQLs($locationSql, $sql, $start, $size, $isPlate);
+            $orden = "asc";
+            if($forden != ""){
+                $orden = $forden;
+            }
+
+            $finalSql = Search::JoinSQLs($locationSql, $sql, $start, $size, $isPlate,$orden);
 
             $query = $db->prepare($finalSql);
             $query->execute();
@@ -191,6 +212,36 @@ class Search extends Result{
                     inner join platos p on pi.id_plato=p.id
                     where ".$where."
                     group by p.id) t1
+                    group by rest_id";
+            }
+        }
+        return $sql;
+    }
+
+    static function GetNoIngredientsSQL($ingredients, $isPlate) {
+        $where="";
+        foreach ($ingredients as $value) {
+            if ($where != "") {
+                $where .= " OR ";
+            }
+            $where .= "platosingredientes.id_ingrediente = " .$value;
+        }
+        if ($where != "") {
+            if ($isPlate) {
+                $sql = "SELECT t1.id FROM platos as t1
+left join(SELECT * FROM platosingredientes WHERE ".$where."
+group by id_plato)AS ing
+on t1.id = ing.id_plato
+WHERE ing.id_plato IS NULL
+group by t1.id";
+            } else {
+                $sql = "select * from (
+SELECT p.rest_id FROM platos as p
+left join(SELECT * FROM platosingredientes WHERE ".$where."
+group by id_plato)AS ing
+on p.id = ing.id_plato
+WHERE ing.id_plato IS NULL
+group by p.id) t1
                     group by rest_id";
             }
         }
@@ -348,7 +399,7 @@ class Search extends Result{
         return $sql;
     }
 
-    static function JoinSQLs($locationSql, $sql, $start, $size, $isPlate) {
+    static function JoinSQLs($locationSql, $sql, $start, $size, $isPlate,$orden="asc") {
         $finalSql = "select location.* from (".$locationSql.") as location ";
         $leftJoinWhere = " where ";
         foreach ($sql as $key => $value) {
@@ -376,7 +427,7 @@ class Search extends Result{
         if ($leftJoinWhere != " where ") {
             $finalSql .= $leftJoinWhere;
         }
-        $finalSql .= " ORDER BY distance asc 
+        $finalSql .= " ORDER BY distance ".$orden."  
             LIMIT ".$start.",".$size;
 
         return $finalSql;
