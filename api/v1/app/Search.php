@@ -151,10 +151,10 @@ class Search extends Result{
                     $result->setRestaurants($restaurant);
                 }
                 $result->setStatus(OK);
-                $result->setMessage($finalSql);
+                $result->setMessage("success");
             } else {
                 $result->setStatus(VOID);
-                $result->setMessage("No se han podido cargar los restaurantes".$finalSql);
+                $result->setMessage("No se han podido cargar los restaurantes");
             }
         } else {
             $result->setStatus(LOCATION_EMPTY_RESTAURANTS);
