@@ -34,6 +34,25 @@ class Allergens extends Result{
         }
 		return $result;
     }
+
+    static function getAllergensV2($db){
+        $result = new Allergens();
+        $sql = "SELECT id,name_image FROM alergenos  ";
+        $query = $db->prepare($sql);
+        $query->execute();
+        $num_rows_userExist = $query->rowCount();
+        if($num_rows_userExist > 0) {
+            $list = array();
+            while($row=$query->fetch()){
+                $list[] = array("id"=>$row["id"],"name"=>$row["name_image"]);
+            }
+            return array("allergens"=>$list);
+        } else {
+            $result->setStatus(VOID);
+            $result->setMessage("No hay datos de los alérgenos");
+        }
+        return $result;
+    }
     
     static function getAllergensByUserId($db, $userId){
         $sql = "SELECT id_alergeno FROM usuarioalergenos
@@ -49,4 +68,19 @@ class Allergens extends Result{
         }
 		return $list;
 	}
+
+    static function getAllergensByUserIdV2($db, $userId){
+        $sql = "SELECT id_alergeno,name_image FROM usuarioalergenos join alergenos on alergenos.id=usuarioalergenos.id_alergeno
+        where id_usuario = ".$userId;
+        $query = $db->prepare($sql);
+        $query->execute();
+        $num_rows_userExist = $query->rowCount();
+        if($num_rows_userExist > 0) {
+            $list = array();
+            while($row=$query->fetch()){
+                $list[] = array("id"=>$row["id_alergeno"],"name"=>$row["name_image"]);
+            }
+        }
+        return array("allergens"=>$list);
+    }
 }

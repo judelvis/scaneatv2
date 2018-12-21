@@ -231,6 +231,16 @@ $app->post('/edit/restaurant', function ($request, $response, $args) {
 	return $this->response->withJson(Restaurants::updateRestaurant($this->db, $postVars));
 });
 
+$app->get('/getAllergens/{id}', function ($request, $response, $args) {
+    $result = User::getAllergensUsu($this->db,$args["id"]);
+    return $this->response->withJson($result);
+});
+
+$app->get('/getAllergens', function ($request, $response) {
+    $result = User::getAllergensV2($this->db);
+    return $this->response->withJson($result);
+});
+
 function printQuery($query) {
     echo $query->debugDumpParams();        
 }

@@ -186,6 +186,14 @@ class User extends Result{
 		}
 		return $result;
 	}
+
+	static function getAllergensUsu($db,$id=""){
+	    return Allergens::getAllergensByUserIdV2($db, $id);
+    }
+
+    static function getAllergensV2($db){
+        return Allergens::getAllergensV2($db);
+    }
 	
 	static function resetPassword($db, $user_id, $user_pass, $val_link){
 		$result = new User();
